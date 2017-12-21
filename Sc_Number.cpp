@@ -11,8 +11,34 @@ namespace Crisp {
         mpz_set_si(value, val);
     }
 
+    Sc_Number::Sc_Number(mpz_t val) : Sc_Value(NUMBER) {
+        mpz_init(value);
+        mpz_set(value, val);
+    }
+
+    Sc_Number::Sc_Number(std::string val) : Sc_Value(NUMBER) {
+        mpz_init(value);
+        mpz_set_str(value, val.c_str(), 0);
+    }
+
     Sc_Number::~Sc_Number() {
         mpz_clear(value);
+    }
+
+    Sc_Value* Sc_Number::eval(Scope *parent) {
+        return this;
+    }
+
+    Sc_Number* Sc_Number::abs() {
+        mpz_t result;
+        mpz_init(result);
+        mpz_abs(result, value);
+        return new Sc_Number(result);
+    }
+
+    Sc_Number* Sc_Number::operator+=(Sc_Number *rhs) {
+        mpz_add(value, value, rhs->value);
+        return this;
     }
 
     void* Sc_Number::operator new(size_t size) {

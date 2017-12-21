@@ -12,27 +12,36 @@ namespace Crisp {
     }
 
     GC::~GC() {
-        for (Sc_Value *memory : allocated) {
-            free(memory);
+        for (auto const &memory : allocated) {
+            free(memory.first);
         }
     }
 
     Sc_Value* GC::GC_alloc(size_t size) {
         Sc_Value *memory = (Sc_Value *) malloc(size);
-        allocated.push_back(memory);
+        allocated[memory] = size;
+
+        // Update stats
+        currentAlloc += size;
+        updateMax();
+
         return memory;
     }
 
     void GC::GC_free(Sc_Value *memory) {
-        auto it = std::find(allocated.begin(), allocated.end(), memory);
-        if (it == allocated.end()) {
-            // tried to free a pointer to a region of memory that was
-            // not allocated by this pool. Ignore this.
-            return;
-        } else {
-            auto index = std::distance(allocated.begin(), it);
-            allocated.erase(allocated.begin() + index);
+        if (allocated.find(memory) != allocated.end()) {
+            // Update stats
+            size_t size = allocated[memory];
+            currentAlloc -= size;
+            updateMax();
+
+            // Free
+            allocated.erase(memory);
             free(memory);
+        } else {
+            // Can't free memory not known to the garbage collector.
+            // Ignore such requests.
+            return;
         }
     }
 
@@ -48,16 +57,30 @@ namespace Crisp {
     }
 
     void GC::sweep() {
-        for (Sc_Value *memory : allocated) {
-            if (memory && !memory->marked()) {
-                GC_free(memory);
+        for (auto const &memory : allocated) {
+            Sc_Value *pointer = memory.first;
+            if (pointer && !pointer->marked()) {
+                GC_free(pointer);
             }
         }
 
+        // Reset the mark on all surviving entries
         global->traverseMark(false);
     }
 
     void GC::setGlobalScope(Scope *scope) {
         global = scope;
+    }
+
+    void GC::updateMax() {
+        maxAlloc = currentAlloc > maxAlloc ? currentAlloc : maxAlloc;
+    }
+
+    int GC::getCurrentAlloc() const {
+        return currentAlloc;
+    }
+
+    int GC::getMaxAlloc() const {
+        return maxAlloc;
     }
 }

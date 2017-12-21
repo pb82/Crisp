@@ -19,8 +19,11 @@ namespace Crisp {
         Scope(Scope *parent);
         ~Scope();
 
-        Sc_Value *lookup(const char *key);
+        Sc_Value *lookup(std::string key);
+
         void assign(const char *key, Sc_Value *value);
+        void assign(std::string key, Sc_Value *value);
+
 
         void traverseMark(bool val);
         void registerChild(Scope *childScope);

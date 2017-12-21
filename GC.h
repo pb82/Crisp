@@ -6,9 +6,9 @@
 #define CRISP_GC_H
 
 #include <vector>
+#include <map>
 #include <cstdlib>
 #include <algorithm>
-#include <stdexcept>
 #include <iostream>
 
 #include "Sc_Value.h"
@@ -30,14 +30,21 @@ namespace Crisp {
         void GC_collect();
 
         void setGlobalScope(Scope *scope);
+
+        int getCurrentAlloc() const;
+        int getMaxAlloc() const;
     private:
         GC() { };
 
         void mark();
         void sweep();
+        void updateMax();
 
-        std::vector<Sc_Value *> allocated;
+        std::map<Sc_Value *, size_t> allocated;
         Scope *global;
+
+        int maxAlloc;
+        int currentAlloc;
     };
 
 }

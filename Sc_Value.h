@@ -11,7 +11,10 @@ namespace Crisp {
 
     enum Sc_Type {
         CELL,
-        NUMBER
+        NUMBER,
+        PROC,
+        REF,
+        SEXPR
     };
 
     class Sc_Value {
@@ -28,11 +31,20 @@ namespace Crisp {
         // Used by the garbage collector
         bool marked() const;
         void mark(bool val);
+
+        int getLine() const;
+        int getPosition() const;
+        void setLine(int line);
+        void setPosition(int position);
     private:
         Sc_Type type;
 
         // Mark/Sweep GC flag
         bool GC_mark;
+
+        // Source references
+        int line;
+        int position;
     };
 
 }

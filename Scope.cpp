@@ -18,7 +18,7 @@
          }
      }
 
-     Sc_Value* Scope::lookup(const char *key) {
+     Sc_Value* Scope::lookup(std::string key) {
          if (bindings.find(key) == bindings.end()) {
              if (parent) {
                  return parent->lookup(key);
@@ -31,6 +31,10 @@
      }
 
      void Scope::assign(const char *key, Sc_Value *value) {
+         bindings[key] = value;
+     }
+
+     void Scope::assign(std::string key, Sc_Value *value) {
          bindings[key] = value;
      }
 
